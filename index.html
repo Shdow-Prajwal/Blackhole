@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Abyss: A Black Hole Journey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU0KOVEMVIARBEGivKRnIm3iHOKUVHTvLNXntZ5wHWiYmaubwlEVBCg" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGqsACqSwwwHI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" xintegrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax5AS+fllcc7/B9oVHCUSLXCHrDERoZoeDg" crossorigin="anonymous"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2093&auto=format&fit=crop');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; border: 1px solid #0a0a0a;}
+        ::-webkit-scrollbar-thumb:hover { background: #67e8f9; }
+
+        #main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            cursor: pointer;
+            transition: opacity 1s ease-out;
+        }
+
+        #supernova-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 101;
+        }
+        
+        .splash-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 102;
+            pointer-events: none;
+        }
+
+        #splash-prompt {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            animation: slowGlow 3s infinite alternate;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes slowGlow {
+            from { opacity: 0.5; text-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+            to { opacity: 0.9; text-shadow: 0 0 15px rgba(255, 255, 255, 0.5); }
+        }
+
+        .scroll-animated {
+            opacity: 0;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .scroll-animated.is-visible {
+            opacity: 1;
+            transform: translate(0, 0) !important;
+        }
+
+        @keyframes kenburns {
+            from { transform: scale(1) translate(0, 0); }
+            to { transform: scale(1.15) translate(-2%, 2%); }
+        }
+        
+        .nav-link {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            transition: color 0.3s ease, transform 0.1s ease, background-color 0.3s ease;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            border-radius: 6px;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: 0.25rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #67e8f9;
+            transition: width 0.3s ease-in-out;
+        }
+        .nav-link:hover::after {
+            width: calc(100% - 2rem);
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-link:active {
+            transform: scale(0.96);
+            filter: brightness(0.9);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-container svg {
+            transition: transform 0.5s ease-in-out;
+        }
+        .logo-container:hover svg {
+            transform: rotate(180deg);
+        }
+
+        .logo-container span {
+            font-family: 'Orbitron', sans-serif;
+            transition: transform 0.3s ease-in-out;
+        }
+        .logo-container:hover span {
+            transform: scale(1.05);
+        }
+        
+        .interactive-card {
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(26, 32, 44, 0.5);
+            border: 1px solid #2d3748;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .interactive-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(103, 232, 249, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 20px rgba(103, 232, 249, 0.2);
+        }
+
+        .interactive-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 75%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg);
+            transition: left 0.7s ease-in-out;
+        }
+
+        .interactive-card:hover::before {
+            left: 150%;
+        }
+        
+        .equation-display {
+            color: #f0f0f0;
+            font-size: 1rem;
+            padding: 1rem 0.5rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .equation-display::-webkit-scrollbar { height: 4px; }
+        .equation-display::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .equation-display::-webkit-scrollbar-thumb { background: #67e8f9; border-radius: 2px; }
+
+    </style>
+</head>
+<body class="bg-black">
+
+    <div id="splash-screen">
+        <canvas id="supernova-canvas"></canvas>
+        <div class="splash-text">
+            <p id="splash-prompt">Click to Ignite</p>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <header class="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-sm z-50 border-b border-white/10 shadow-lg shadow-black/20">
+            <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+                <a href="#" class="logo-container flex items-center space-x-3">
+                    <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 90,50 A 40,40 0 1,1 50,10" fill="none" stroke="#67e8f9" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M 70,50 A 20,20 0 1,1 50,30" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+                        <circle cx="50" cy="50" r="12" fill="black"/>
+                    </svg>
+                    <span class="text-2xl font-bold text-white tracking-wider">COSMIC ABYSS</span>
+                </a>
+                <div>
+                    <a href="#about" class="nav-link text-gray-300 hover:text-cyan-300 text-sm font-medium">About</a>
+                    <a href="#anatomy" class="nav-link text-gray-300 hover:text-cyan-300 text-sm font-medium">Anatomy</a>
+                    <a href="#discoveries" class="nav-link text-gray-300 hover:text-cyan-300 text-sm font-medium">Discoveries</a>
+                    <a href="#field-equations" class="nav-link text-gray-300 hover:text-cyan-300 text-sm font-medium">Field Equations</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <section class="h-screen flex items-center justify-center text-white text-center relative overflow-hidden">
+                <div class="absolute inset-0" style="background-image: url('https://images.unsplash.com/photo-1534796636912-3b95-b3ab5986?q=80&w=2071&auto=format&fit=crop'); background-size: cover; background-position: center; animation: kenburns 30s ease-in-out infinite alternate;"></div>
+                <div class="absolute inset-0 bg-black/60"></div>
+                <div class="relative z-10 p-4">
+                    <div class="scroll-animated" style="transform: translateY(40px);">
+                        <h2 class="text-5xl md:text-7xl font-black uppercase tracking-widest">Journey into the Singularity</h2>
+                    </div>
+                    <div class="scroll-animated" style="transform: translateY(40px); transition-delay: 200ms;">
+                        <p class="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-gray-300">Exploring the most enigmatic and powerful objects in the universe.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="bg-black/80 backdrop-blur-md py-20 text-gray-200">
+                <div class="container mx-auto px-6">
+                    <section id="about" class="mb-20">
+                        <div class="grid md:grid-cols-2 gap-12 items-center">
+                            <div class="scroll-animated" style="transform: translateX(-40px);">
+                                <h3 class="text-4xl font-bold mb-4">What is a Black Hole?</h3>
+                                <p class="text-gray-400 leading-relaxed">
+                                    A black hole is a region of spacetime where gravity is so strong that nothing—no particles or even electromagnetic radiation such as light—can escape from it. The theory of general relativity predicts that a sufficiently compact mass can deform spacetime to form a black hole.
+                                </p>
+                                <p class="text-gray-400 leading-relaxed mt-4">
+                                    They are born from the remnants of massive stars that have exhausted their nuclear fuel and collapsed under their own gravity. This catastrophic event, known as a supernova, can leave behind a dense core that continues to collapse into an infinitely dense point called a singularity.
+                                </p>
+                            </div>
+                            <div class="scroll-animated" style="transform: translateX(40px); transition-delay: 200ms;">
+                                <img src="https://images.unsplash.com/photo-1614726353142-99a52c04c53c?q=80&w=1974&auto=format&fit=crop" alt="Illustration of a black hole in space" class="rounded-lg shadow-2xl shadow-blue-500/20">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="anatomy" class="mb-20 text-center">
+                        <div class="scroll-animated" style="transform: translateY(40px);">
+                            <h3 class="text-4xl font-bold mb-10">Anatomy of a Black Hole</h3>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-8">
+                            <div class="scroll-animated" style="transform: translateY(40px);">
+                                <div class="interactive-card p-6 rounded-lg">
+                                    <h4 class="text-2xl font-bold text-cyan-400 mb-2">Singularity</h4>
+                                    <p class="text-gray-400">At the center of a black hole is the singularity, a one-dimensional point which contains a huge mass in an infinitely small space, where density and gravity become infinite and spacetime curves infinitely.</p>
+                                </div>
+                            </div>
+                            <div class="scroll-animated" style="transform: translateY(40px); transition-delay: 200ms;">
+                                <div class="interactive-card p-6 rounded-lg">
+                                    <h4 class="text-2xl font-bold text-cyan-400 mb-2">Event Horizon</h4>
+                                    <p class="text-gray-400">This is the "point of no return." It is the boundary around the singularity from which nothing can escape. Anything that crosses the event horizon is pulled in by the black hole's gravity forever.</p>
+                                </div>
+                            </div>
+                            <div class="scroll-animated" style="transform: translateY(40px); transition-delay: 400ms;">
+                                <div class="interactive-card p-6 rounded-lg">
+                                    <h4 class="text-2xl font-bold text-cyan-400 mb-2">Accretion Disk</h4>
+                                    <p class="text-gray-400">A disk-like flow of gas, plasma, dust, or stars around the black hole. As material in the disk spirals inward, it heats up due to friction and emits vast amounts of energy, making the black hole's vicinity visible.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section id="discoveries" class="mb-20 text-center">
+                        <div class="scroll-animated" style="transform: translateY(40px);">
+                            <h3 class="text-4xl font-bold mb-10">Latest Discoveries</h3>
+                        </div>
+                        <div class="scroll-animated" style="transform: translateY(40px);">
+                             <div class="interactive-card max-w-4xl mx-auto p-8 rounded-lg">
+                                 <h4 class="text-2xl font-bold text-amber-400 mb-4">First Image of a Black Hole</h4>
+                                 <p class="text-gray-400 leading-relaxed">In 2019, the Event Horizon Telescope (EHT) collaboration captured the first-ever direct image of a black hole. They imaged the supermassive black hole at the center of the Messier 87 galaxy, revealing a bright ring of light surrounding a dark shadow—the event horizon. This monumental achievement provided visual confirmation of Einstein's theories and opened a new window into studying these cosmic giants.</p>
+                             </div>
+                        </div>
+                    </section>
+
+                    <section id="field-equations" class="pt-10 text-center">
+                        <div class="scroll-animated" style="transform: translateY(40px);">
+                            <h3 class="text-4xl font-bold mb-10">Foundational Field Equations</h3>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-8">
+                            <div class="scroll-animated" style="transform: translateY(40px);">
+                                <div class="interactive-card p-6 rounded-lg">
+                                    <h4 class="text-2xl font-bold text-cyan-400 mb-2">Einstein's Field Equation</h4>
+                                    <div class="equation-display"></div>
+                                    <p class="text-gray-400 text-sm">Relates spacetime curvature with the distribution of matter and energy.</p>
+                                </div>
+                            </div>
+                            <div class="scroll-animated" style="transform: translateY(40px); transition-delay: 200ms;">
+                                <div class="interactive-card p-6 rounded-lg">
+                                    <h4 class="text-2xl font-bold text-cyan-400 mb-2">Schwarzschild Metric</h4>
+                                    <div class="equation-display"></div>
+                                    <p class="text-gray-400 text-sm">Describes gravity around a static, non-rotating spherical mass.</p>
+                                </div>
+                            </div>
+                            <div class="scroll-animated" style="transform: translateY(40px); transition-delay: 400ms;">
+                                <div class="interactive-card p-6 rounded-lg">
+                                    <h4 class="text-2xl font-bold text-cyan-400 mb-2">Kerr Metric</h4>
+                                    <div class="equation-display"></div>
+                                    <p class="text-gray-400 text-sm">Describes the more complex geometry around a rotating mass.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="bg-black/50 backdrop-blur-sm text-center py-6 mt-20">
+            <p class="text-gray-500">&copy; 2025 Cosmic Abyss. A journey into the unknown.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Supernova Animation ---
+            let scene, camera, renderer, particles, uniforms, shockwave;
+            const clock = new THREE.Clock(false); // Start the clock paused
+
+            function initSupernova() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 350;
+
+                const canvas = document.getElementById('supernova-canvas');
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+                renderer.setClearColor(0x000000, 1);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const particleCount = 50000;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                const randoms = new Float32Array(particleCount * 3); 
+
+                for (let i = 0; i < particleCount; i++) {
+                    const i3 = i * 3;
+                    positions[i3] = 0;
+                    positions[i3 + 1] = 0;
+                    positions[i3 + 2] = 0;
+
+                    const spherical = new THREE.Spherical(1, Math.acos(1 - 2 * Math.random()), Math.random() * 2 * Math.PI);
+                    const direction = new THREE.Vector3().setFromSpherical(spherical);
+                    
+                    randoms[i3] = direction.x;
+                    randoms[i3 + 1] = direction.y;
+                    randoms[i3 + 2] = direction.z;
+                }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+
+                uniforms = {
+                    uTime: { value: 0.0 },
+                    uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+                    uSize: { value: 200.0 }
+                };
+
+                const material = new THREE.ShaderMaterial({
+                    uniforms: uniforms,
+                    vertexShader: `
+                        uniform float uTime;
+                        uniform float uPixelRatio;
+                        uniform float uSize;
+                        attribute vec3 aRandom;
+
+                        void main() {
+                            vec3 direction = aRandom;
+                            float speed = 0.5 + direction.z * 0.5;
+                            // Faster explosion speed
+                            float progress = clamp(uTime * 0.5 * speed, 0.0, 1.0);
+                            
+                            // More dramatic expansion
+                            vec3 newPosition = position + direction * progress * (200.0 + (direction.x * 80.0));
+                            
+                            vec4 modelViewPosition = modelViewMatrix * vec4(newPosition, 1.0);
+                            gl_Position = projectionMatrix * modelViewPosition;
+                            
+                            float pointSize = uSize * (1.0 - progress * 0.8) * uPixelRatio / -modelViewPosition.z;
+                            gl_PointSize = max(0.0, pointSize);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float uTime;
+                        
+                        void main() {
+                            float distanceToCenter = length(gl_PointCoord - vec2(0.5));
+                            if (distanceToCenter > 0.5) {
+                                discard;
+                            }
+                            
+                            // Faster fade
+                            float progress = clamp(uTime * 0.5, 0.0, 1.0);
+                            float alpha = smoothstep(0.0, 0.1, progress) * (1.0 - progress * 1.1);
+
+                            // More dramatic colors
+                            vec3 color = mix(vec3(1.0, 0.9, 0.7), vec3(0.9, 0.2, 0.5), progress * 1.2);
+                            
+                            gl_FragColor = vec4(color, alpha);
+                        }
+                    `,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+
+                particles = new THREE.Points(geometry, material);
+                scene.add(particles);
+
+                const shockwaveGeometry = new THREE.RingGeometry(0.1, 1, 128);
+                const shockwaveMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xffffff, 
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.0
+                });
+                shockwave = new THREE.Mesh(shockwaveGeometry, shockwaveMaterial);
+                scene.add(shockwave);
+
+                window.addEventListener('resize', onWindowResize);
+                animate();
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+                uniforms.uTime.value = elapsedTime;
+
+                if (clock.running) {
+                    // Faster and bigger shockwave
+                    const shockwaveProgress = Math.min(elapsedTime / 0.8, 1.0);
+                    if(shockwaveProgress < 1.0){
+                        shockwave.scale.setScalar(1 + shockwaveProgress * 500);
+                        shockwave.material.opacity = (1.0 - shockwaveProgress) * 1.0;
+                    } else if (shockwave.material.opacity > 0) {
+                        shockwave.material.opacity = 0;
+                    }
+                }
+                
+                renderer.render(scene, camera);
+            }
+
+            initSupernova();
+            
+            const splashScreen = document.getElementById('splash-screen');
+            const mainContent = document.getElementById('main-content');
+            const splashPrompt = document.getElementById('splash-prompt');
+            let isExploding = false;
+
+            splashScreen.addEventListener('click', () => {
+                if (isExploding) return;
+                isExploding = true;
+
+                splashPrompt.style.opacity = '0';
+                clock.start();
+
+                // Faster transition to main site
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        mainContent.style.display = 'block';
+                        setTimeout(() => {
+                            mainContent.style.opacity = '1';
+                            setupScrollAnimations();
+                            renderEquations();
+                        }, 50);
+                    }, 1000); 
+                }, 1800); 
+            });
+
+            function setupScrollAnimations() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('.scroll-animated').forEach(target => {
+                    observer.observe(target);
+                });
+            }
+
+            function renderEquations() {
+                 const equations = [
+                    { selector: '#field-equations .grid > div:nth-child(1) .equation-display', formula: `R_{\\mu\
+u} - \\frac{1}{2}g_{\\mu\
+u}R + \\Lambda g_{\\mu\
+u} = \\frac{8\\pi G}{c^4}T_{\\mu\
+u}` },
+                    { selector: '#field-equations .grid > div:nth-child(2) .equation-display', formula: `ds^2 = -\\left(1-\\frac{2GM}{rc^2}\\right)c^2dt^2 + \\frac{dr^2}{1-\\frac{2GM}{rc^2}} + r^2 d\\Omega^2` },
+                    { selector: '#field-equations .grid > div:nth-child(3) .equation-display', formula: `ds^2 = -\\left(1-\\frac{2GMr}{\\rho^2 c^2}\\right)c^2dt^2 - \\frac{4GMar\\sin^2\\theta}{\\rho^2 c}dtd\\phi + \\dots` }
+                ];
+
+                equations.forEach(eq => {
+                    const element = document.querySelector(eq.selector);
+                    if (element) {
+                        katex.render(eq.formula, element, {
+                            throwOnError: false,
+                            displayMode: true
+                        });
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
+
+
