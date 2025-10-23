@@ -1,1 +1,1 @@
-Put the simulation api file and the index file in the same folder on VS code and run the index file on a live server
+Put the simulation api file and the index file in the same folder on VS code and run the index file on a live server. Add your simulation or make any changes to the code whereveer required and commit the changes on this repo
